@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stopwatch</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        text-align: center;
+        background-color: #3c8a87;
+        margin: 0;
+        padding: 0;
+    }
+    nav {
+        background-color: #065e5f;
+        color: #fff;
+        padding: 20px 0;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        z-index: 1000;
+    }
+    nav h1 {
+        margin: 0;
+    }
+    #container {
+        margin: 80px auto 20px; /* Adjusted to make space for the fixed navbar */
+        max-width: 400px;
+    }
+    #stopwatch {
+        font-size: 3em;
+        margin-bottom: 20px;
+        background-color: #ffffff;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px #0000001a;
+    }
+    button {
+        font-size: 1em;
+        padding: 10px 20px;
+        margin: 0 5px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        background-color: #136bc8;
+        color: #fff;
+        transition: background-color 0.3s;
+    }
+    button:hover {
+        background-color: #072b4e;
+    }
+    #lapTimes {
+        font-size: 1.2em;
+        background-color: #fff;
+        padding: 10px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    .lapTime {
+        margin-bottom: 5px;
+    }
+</style>
+</head>
+<body>
+    <nav>
+        <h1>STOPWATCH</h1>
+    </nav>
+<div id="container">
+    <div id="stopwatch">00:00:00</div>
+    <button id="startButton" onclick="start()">Start</button>
+    <button id="stopButton" onclick="stop()" disabled>Stop</button>
+    <button id="lapButton" onclick="lap()">Lap</button>
+    <button id="resetButton" onclick="reset()">Reset</button>
+    <div id="lapTimes"></div>
+</div>
+
+<script>
+    let startTime, currentTime, elapsedTime = 0;
+    let timerInterval;
+    let laps = [];
+    let running = false;
+
+    function start() {
+        if (!running) {
+            startTime = Date.now() - elapsedTime;
+            timerInterval = setInterval(updateTime, 10);
+            document.getElementById("startButton").disabled = true;
+            document.getElementById("stopButton").disabled = false;
+            document.getElementById("lapButton").disabled = false;
+            running = true;
+        }
+    }
+
+    function stop() {
+        if (running) {
+            clearInterval(timerInterval);
+            document.getElementById("startButton").disabled = false;
+            document.getElementById("stopButton").disabled = true;
+            document.getElementById("lapButton").disabled = true;
+            running = false;
+        }
+    }
+
+    function lap() {
+        if (running) {
+            let lapTime = elapsedTime - laps.reduce((a, b) => a + b, 0);
+            laps.push(lapTime);
+            displayLaps();
+        }
+    }
+
+    function reset() {
+        stop();
+        elapsedTime = 0;
+        laps = [];
+        displayTime(elapsedTime);
+        document.getElementById("lapTimes").innerHTML = "";
+    }
+
+    function updateTime() {
+        currentTime = Date.now();
+        elapsedTime = currentTime - startTime;
+        displayTime(elapsedTime);
+    }
+
+    function displayTime(time) {
+        let hours = Math.floor(time / 3600000);
+        let minutes = Math.floor((time % 3600000) / 60000);
+        let seconds = Math.floor((time % 60000) / 1000);
+        let milliseconds = Math.floor(time % 1000);
+
+        document.getElementById("stopwatch").textContent = 
+            pad(hours) + ":" + pad(minutes) + ":" + pad(seconds) + "." + pad(milliseconds, 3);
+    }
+
+    function displayLaps() {
+        let lapTimesDiv = document.getElementById("lapTimes");
+        lapTimesDiv.innerHTML = "";
+        laps.forEach((lap, index) => {
+            let lapTime = document.createElement("div");
+            lapTime.textContent = "Lap " + (index + 1) + ": " + formatTime(lap);
+            lapTime.classList.add("lapTime");
+            lapTimesDiv.appendChild(lapTime);
+        });
+    }
+
+    function pad(num, size = 2) {
+        return ("0" + num).slice(-size);
+    }
+
+    function formatTime(time) {
+        let minutes = Math.floor(time / 60000);
+        let seconds = Math.floor((time % 60000) / 1000);
+        let milliseconds = Math.floor(time % 1000);
+        return pad(minutes) + ":" + pad(seconds) + "." + pad(milliseconds, 3);
+    }
+</script>
+</body>
+</html>
